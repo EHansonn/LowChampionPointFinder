@@ -40,9 +40,9 @@ local function GetTargetChampionPoints()
     if IsUnitPlayer("reticleover") then
         local championPoints = GetUnitChampionPoints("reticleover") 
         return championPoints
-      else
+    else
         return 160
-      end
+    end
 end
 
 local function SetColor(color,view)

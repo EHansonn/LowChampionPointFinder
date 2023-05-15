@@ -1,0 +1,11 @@
+## Title: LowChampionPointFinder
+## APIVersion: 101033
+## SavedVariables: LowChampionPointFinderVars
+## AddOnVersion: 1.0
+## IsLibrary: False
+## Author: EHansonn
+## DependsOn: LibAddonMenu-2.0>=30
+
+
+LowChampionPointFinder.lua
+LowChampionPointFinder.xml

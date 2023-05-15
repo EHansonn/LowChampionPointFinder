@@ -6,9 +6,11 @@ local LAM = LibAddonMenu2
 -- Local Vars -- 
 LowChampionPointFinder = {}
 local ADDON_NAME = "LowChampionPointFinder"
-local ADDON_VERSION = "1.0"
-local DATABASE_VERSION = "1.0"
+local ADDON_VERSION = "1.01"
+local DATABASE_VERSION = "1.01"
 local LOADED = false
+
+local EMPTY_GROUP = {lowCp=0, highCp=3600, text="", color={r=0.0, g=0.0, b=0.0, a=0.0}}
 
 local DB
 local DEFAULTS = {
@@ -32,7 +34,7 @@ local function FindChampionPointGroup(Cp,groups)
           return group
         end
       end 
-    return groups[1]
+    return EMPTY_GROUP
 end
 
 

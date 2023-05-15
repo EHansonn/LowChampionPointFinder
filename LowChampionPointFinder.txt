@@ -1,7 +1,7 @@
 ## Title: LowChampionPointFinder
 ## APIVersion: 101033
 ## SavedVariables: LowChampionPointFinderVars
-## AddOnVersion: 1.0
+## AddOnVersion: 1.01
 ## IsLibrary: False
 ## Author: EHansonn
 ## DependsOn: LibAddonMenu-2.0>=30

@@ -89,7 +89,7 @@ local function CreateAnchors()
     LowChampionPointFinderViewCp:SetAnchor(TOP,LowChampionPointFinderView,TOP,DB.CpOffset.x,DB.CpOffset.y)
 end
 
-local function UpdateFont()
+local function UpdateFont() --Same font as squishyfinder <3 -- 
     LowChampionPointFinderViewCp:SetFont("$(BOLD_FONT)|" .. DB.fontSize .. "|soft-shadow-thick")
 end
 
@@ -183,7 +183,7 @@ local function CreateSettingsMenu()
 			type = "checkbox",
 			name = "PvP Zone Only",
 			textType = TEXT_TYPE_NUMERIC_UNSIGNED_INT,
-			tooltip = "See CP in non pvp zones?",
+			tooltip = "Turn OFF to see CP in non pvp zones",
 			default = DEFAULTS.isPvpOnly,
 			getFunc = function() return DB.isPvpOnly end,
 			setFunc = function(value)
@@ -194,7 +194,7 @@ local function CreateSettingsMenu()
 			type = "checkbox",
 			name = "Attackable (enemy) targets only",
 			textType = TEXT_TYPE_NUMERIC_UNSIGNED_INT,
-			tooltip = "See non attackable targets (friendly players)?",
+			tooltip = "Turn OFF to see non attackable targets (friendly players)",
 			default = DEFAULTS.isAttackableOnly,
 			getFunc = function() return DB.isAttackableOnly end,
 			setFunc = function(value)
@@ -285,7 +285,7 @@ local function CreateSettingsMenu()
 
     local optionsIndex = #options +1
   
-    for i=1,#DEFAULTS.ChampionPointGroups do -- player cp groups
+    for i=1,#DEFAULTS.ChampionPointGroups do
       local result = createControlsForGroup(i, DB.ChampionPointGroups[i], DEFAULTS.ChampionPointGroups[i])
       for resulti=1,#result do
         options[optionsIndex] = result[resulti]

@@ -6,14 +6,17 @@ local LAM = LibAddonMenu2
 -- Local Vars -- 
 LowChampionPointFinder = {}
 local ADDON_NAME = "LowChampionPointFinder"
-local ADDON_VERSION = "1.01"
-local DATABASE_VERSION = "1.01"
+local ADDON_VERSION = "1.02"
+local DATABASE_VERSION = "1.02"
 local LOADED = false
 
 local EMPTY_GROUP = {lowCp=0, highCp=3600, text="", color={r=0.0, g=0.0, b=0.0, a=0.0}}
 
 local DB
 local DEFAULTS = {
+    useGradients = false,
+    group1GradientStart = {r=0.4, g=1.0, b=1.0, a=1.0},
+    group6GradientEnd = {r=1.0, g=0.0, b=0.5, a=0.5},
     fontSize = 32,
     CpOffset = {x = 0, y = 60},
     isPvpOnly = true, -- Controls if CP shows in non pvp zones (IE Duels)
@@ -31,10 +34,19 @@ local DEFAULTS = {
 local function FindChampionPointGroup(Cp,groups)
     for i, group in ipairs(groups) do
         if Cp >= group.lowCp and Cp <= group.highCp then
-          return group
+            local nextGroupColor;
+            if i == #groups then
+            nextGroupColor = DB.group6GradientEnd
+            elseif i == 1 then
+            nextGroupColor = DB.group1GradientStart
+            else
+                nextGroupColor = groups[i-1].color
+            end
+            
+          return group, nextGroupColor
         end
       end 
-    return EMPTY_GROUP
+    return EMPTY_GROUP,EMPTY_GROUP.color
 end
 
 
@@ -47,6 +59,14 @@ local function GetTargetChampionPoints()
     end
 end
 
+local function SetColorGradient(color1,color2,view, percentage)
+    local r = color1.r + (color2.r - color1.r) * percentage
+    local g = color1.g + (color2.g - color1.g) * percentage
+    local b = color1.b + (color2.b - color1.b) * percentage
+    local a = color1.a + (color2.a - color1.a) * percentage
+    view:SetColor(r, g, b, a)
+end
+
 local function SetColor(color,view)
     local red = color.r
     local green = color.g
@@ -54,7 +74,6 @@ local function SetColor(color,view)
     local alpha = color.a
     view:SetColor(red, green, blue, alpha)
 end
-
 
 local function UpdateUi()
     if LOADED == true then
@@ -69,10 +88,21 @@ local function UpdateUi()
         else
             LowChampionPointFinderView:SetAlpha(1)
             local targetChampionPoints = GetTargetChampionPoints()
-            local matchingGroup = FindChampionPointGroup(targetChampionPoints,DB.ChampionPointGroups)
+            local matchingGroup, nextGroupColor = FindChampionPointGroup(targetChampionPoints,DB.ChampionPointGroups)
+            if nextGroup == nil then
+            nextGroup = matchingGroup    
+            
+            end
 
-            LowChampionPointFinderViewCp:SetText(matchingGroup.text)
+            local finalText = string.gsub(matchingGroup.text,"{cp}",targetChampionPoints)
+
+
+            LowChampionPointFinderViewCp:SetText(finalText)
+            if (DB.useGradients == true) then
+            SetColorGradient(nextGroupColor,matchingGroup.color,LowChampionPointFinderViewCp,(targetChampionPoints/matchingGroup.highCp))
+            else
             SetColor(matchingGroup.color,LowChampionPointFinderViewCp)
+            end
         end
     end
 end
@@ -133,7 +163,7 @@ local function createControlsForGroup(i, group, default)
     table.insert(options, {
         type = "editbox",
         name = "Group " .. i .. " text",
-        tooltip = "The text that is displayed when the target's CP is within this value. Leave empty to show nothing",
+        tooltip = "The text that is displayed when the target's CP is within this value. Leave empty to show nothing. The substring `{cp}` can be used to insert the targets champion points if desired.",
         default = default.text,
         getFunc = function() return group.text end,
         setFunc = function(text) 
@@ -204,12 +234,52 @@ local function CreateSettingsMenu()
 			end,
 		},
         {
+			type = "checkbox",
+			name = "Use color gradients",
+			textType = TEXT_TYPE_NUMERIC_UNSIGNED_INT,
+			tooltip = "Enable if you want a gradient. If the cp is within group 1, it will have a gradient between the start gradient and group 1s color. For example, if its in group 3s cp, it will go from group 2s color -> group 3s color.",
+			default = DEFAULTS.useGradients,
+			getFunc = function() return DB.useGradients end,
+			setFunc = function(value)
+				DB.useGradients = value
+			end,
+		},
+
+        {
+            type = "colorpicker",
+            name = "[OPTIONAL] Start gradient for group 1",
+            tooltop = "Optional. If the target is within group 1s cp range, it gradient will go from this color -> group1s color",
+            default = DEFAULTS.group1GradientStart,
+                getFunc = function() 
+                    return DB.group1GradientStart.r, DB.group1GradientStart.g, DB.group1GradientStart.b, DB.group1GradientStart.a
+                end,
+                setFunc = function(r,g,b,a) 
+                    DB.group1GradientStart = { r=r, g=g, b=b, a=a }
+                end,
+          },
+          {
+            type = "colorpicker",
+            name = "[OPTIONAL] End gradient for group 6",
+            tooltop = "Optional. If the target is within group 6s cp range, it gradient will go from this group6's color -> this color",
+            default = DEFAULTS.group6GradientEnd,
+                getFunc = function() 
+                    return DB.group6GradientEnd.r, DB.group6GradientEnd.g, DB.group6GradientEnd.b, DB.group6GradientEnd.a
+                end,
+                setFunc = function(r,g,b,a) 
+                    DB.group6GradientEnd = { r=r, g=g, b=b, a=a }
+                end,
+          },
+          
+        {
 			type = "button",
 			name = "Reset to defaults",
 			tooltip = "Resets to default values",
 			func = function() 
                 DB.isAttackableOnly = DEFAULTS.isAttackableOnly
                 DB.isPvpOnly = DEFAULTS.isPvpOnly
+                DB.useGradients = DEFAULTS.useGradients
+                DB.group1GradientStart = DEFAULTS.group1GradientStart
+                DB.group6GradientEnd = DEFAULTS.group6GradientEnd
 			end,
 		},
 
